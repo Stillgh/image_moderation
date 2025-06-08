@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History - My Site{% endblock %}
+
+{% block content %}
+  <style>
+    .container {
+      max-width: 1200px !important;
+    }
+  </style>
+
+  <h2>Prediction History</h2>
+  <div class="wide-container">
+    {% if predictions and predictions|length > 0 %}
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Model Name</th>
+<!--            <th>Inference Input</th>-->
+            <th>Result</th>
+            <th>Success</th>
+            <th>Cost</th>
+            <th>Request Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prediction in predictions %}
+            <tr>
+              <td>{{ prediction.id }}</td>
+              <td>{{ prediction.model_name }}</td>
+<!--              <td>-->
+<!--                <div class="scrollable-cell">-->
+<!--                  {{ prediction.inference_input }}-->
+<!--                </div>-->
+<!--              </td>-->
+              <td>{{ prediction.result }}</td>
+              <td>{{ prediction.is_success }}</td>
+              <td>{{ prediction.cost }}</td>
+              <td>{{ prediction.request_timestamp }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="no-history-message">No prediction transactions were made.</p>
+    {% endif %}
+  </div>
+  <a href="/home" class="btn">Return Home</a>
+
+  <style>
+    .table-container {
+      width: 1200px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    .history-table {
+      max-width: 1200px;
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px; /* Increased min-width for a wider table */
+    }
+    .history-table th, .history-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .history-table th {
+      background-color: #f2f2f2;
+    }
+    .no-history-message {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+    /* Scrollable cell for long inference input content */
+    .scrollable-cell {
+      max-height: 80px;
+      overflow-y: auto;
+      display: block;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .wide-container {
+      max-width: 1200px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}My Info - My Site{% endblock %}
+
+{% block content %}
+  <h2>My Information</h2>
+  <div class="info-container" style="padding: 1rem; border: 1px solid #ddd; border-radius: 5px; background-color: #fafafa; margin-bottom: 1rem;">
+    <p><strong>Name:</strong> {{ user.name }}</p>
+    <p><strong>Surname:</strong> {{ user.surname }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Balance:</strong> {{ user.balance }}</p>
+    <p><strong>Role:</strong> {{ user.role.value }}</p>
+  </div>
+  <a href="/home" class="btn">Back to Home</a>
+{% endblock %}

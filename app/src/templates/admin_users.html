@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}All Users - Admin Panel{% endblock %}
+
+{% block content %}
+  <div class="users-container">
+    <h2>All Users</h2>
+    {% if users and users|length > 0 %}
+      <div class="table-wrapper">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Role</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>{{ user.email }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.surname }}</td>
+                <td>{{ user.role.value }}</td>
+                <td>{{ user.balance }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="no-users">No users found.</p>
+    {% endif %}
+    <a href="/admin" class="btn">Return to Admin Panel</a>
+  </div>
+{% endblock %}
+
+<style>
+  .users-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .users-container h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+  }
+  .users-table th, .users-table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+  }
+  .users-table th {
+    background-color: #f2f2f2;
+  }
+  .no-users {
+    text-align: center;
+    font-style: italic;
+    color: #555;
+    margin: 1rem 0;
+  }
+  a.btn {
+    display: inline-block;
+    margin: 1rem auto;
+    padding: 0.75rem 1.5rem;
+    background-color: #4a90e2;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+  }
+  a.btn:hover {
+    background-color: #357ab8;
+  }
+</style>

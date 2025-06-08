@@ -1,0 +1,1 @@
+DEFAULT_MODEL_NAME = 'nsfw_model.pkl'

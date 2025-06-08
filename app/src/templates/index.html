@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - My Site{% endblock %}
+
+{% block content %}
+{% if user %}
+    <h2>You are logged in :)</h2>
+    <p>
+        Hi {{ user }}! You are logged in, so you can access the home
+        page. <a href="/home">here</a>!
+    </p>
+{% else %}
+    <h2>You are NOT logged in :(</h2>
+    <p>Please <a href="/login">login</a> or <a href="/signup">register</a>.</p>
+
+{% endif %}
+
+{% endblock %}

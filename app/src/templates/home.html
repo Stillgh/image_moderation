@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - My Site{% endblock %}
+
+{% block content %}
+  <h2>Dashboard</h2>
+  <p>Welcome! On that site you can check the sentiment of a text</p>
+
+  <!-- Navigation Links -->
+  <div class="nav-links">
+    <a href="/users/myinfo" class="btn">My Info</a>
+    <a href="/logout" class="btn">Logout</a>
+    {% if user.role.value == "admin" %}
+      <a href="/admin" class="btn">Admin Panel</a>
+    {% endif %}
+  </div>
+
+  <!-- Balance Section -->
+  <div class="section">
+    <button class="btn toggle-btn" onclick="toggleSection('balanceSection')">Balance</button>
+    <div id="balanceSection" class="panel">
+      <div class="panel-item">
+        <strong>Current Balance:</strong>
+        <span id="currentBalance">--</span>
+      </div>
+      <div class="panel-item">
+        <label for="addAmount">Add Balance:</label>
+        <input type="number" id="addAmount" name="addAmount" placeholder="Amount">
+        <button class="btn action-btn" onclick="handleAddBalance()">Add</button>
+      </div>
+      <div class="panel-item">
+        <label for="withdrawAmount">Withdraw Balance:</label>
+        <input type="number" id="withdrawAmount" name="withdrawAmount" placeholder="Amount">
+        <button class="btn action-btn" onclick="handleWithdrawBalance()">Withdraw</button>
+      </div>
+      <div class="panel-item">
+        <button class="btn action-btn" onclick="showBalanceHistory()">Balance History</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Prediction Section -->
+<div class="section">
+  <button class="btn toggle-btn" onclick="toggleSection('predictionSection')">Prediction</button>
+  <div id="predictionSection" class="panel">
+    <div class="panel-item">
+      <label for="predictionImage"><strong>Select image:</strong></label>
+      <input type="file"
+             id="predictionImage"
+             name="predictionImage"
+             accept="image/*">
+    </div>
+
+    <div class="panel-item">
+      <label><strong>Choose Model:</strong></label>
+      <label>
+        <input type="radio" name="modelName" value="nsfw-detector" checked>
+        NSFW-Detector
+      </label>
+    </div>
+
+    <!-- КНОПКИ -->
+    <div class="panel-item">
+      <button class="btn action-btn" onclick="handleMakePrediction()">Predict</button>
+    </div>
+    <div class="panel-item">
+      <button class="btn action-btn" onclick="showPredictionHistory()">Prediction History</button>
+    </div>
+    <div class="panel-item">
+      <button class="btn" onclick="openManualModal()">Get Prediction Result</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Auto Prediction Result Modal (opens after clicking Predict) -->
+  <div id="autoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="autoModalClose" class="close">&times;</span>
+        <h3>Prediction Status</h3>
+      </div>
+      <div class="modal-body">
+        <p id="autoModalMessage"></p>
+        <!-- Result container with grid-like borders -->
+        <div id="autoResultContainer" class="result-container"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="autoResultButton" class="btn">Get Prediction Result</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Prediction Result Modal (for entering task ID manually) -->
+  <div id="manualModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="manualModalClose" class="close">&times;</span>
+        <h3>Enter Task ID</h3>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="manualTaskId" placeholder="Enter Task ID" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
+        <!-- Result container for manual modal -->
+        <div id="manualResultContainer" class="result-container"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="manualResultButton" class="btn">Get Prediction Result</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* General Button Styling */
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      margin: 0.25rem 0;
+    }
+    .btn:hover {
+      background-color: #357ab8;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    /* Section Styling */
+    .section { margin: 1rem 0; }
+    .nav-links { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .panel {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fafafa;
+    }
+    .panel-item { margin-bottom: 1rem; }
+    .panel-item label { margin-right: 0.5rem; }
+    .panel-item input[type="number"],
+    .panel-item input[type="text"],
+    .panel-item textarea {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+    .toggle-btn { width: 100%; text-align: left; }
+    .action-btn { margin-top: 0.5rem; }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    .modal-header, .modal-footer {
+      padding: 15px;
+      background-color: #4a90e2;
+      color: #fff;
+      text-align: center;
+    }
+    .modal-header { position: relative; }
+    .modal-body { padding: 15px; background-color: #fefefe; }
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover, .close:focus { color: #000; }
+    /* Result container with grid-like borders */
+    .result-container {
+      border: 2px solid #ddd;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #fafafa;
+      margin-top: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow: auto;
+      max-height: 200px;
+    }
+    /* Manual modal input styling */
+    #manualTaskId { border: 1px solid #ddd; border-radius: 4px; }
+  </style>
+
+  <script>
+    // Toggle section visibility.
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
+      if (sectionId === 'balanceSection') { updateCurrentBalance(); }
+    }
+
+    // Update current balance.
+    function updateCurrentBalance() {
+      fetch('/users/balance/current')
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('currentBalance').innerText = parseFloat(data).toFixed(2);
+        })
+        .catch(error => {
+          console.error('Error fetching current balance:', error);
+          document.getElementById('currentBalance').innerText = 'Error';
+        });
+    }
+
+    // Balance functions.
+    function handleAddBalance() {
+      const amount = parseFloat(document.getElementById("addAmount").value);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount to add.");
+        return;
+      }
+      fetch('/users/balance/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount })
+      })
+      .then(response => { if (!response.ok) throw new Error('Error adding balance'); return response.json(); })
+      .then(data => {
+        document.getElementById('currentBalance').innerText = parseFloat(data.new_balance).toFixed(2);
+        document.getElementById("addAmount").value = "";
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    function handleWithdrawBalance() {
+      const amount = parseFloat(document.getElementById("withdrawAmount").value);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount to withdraw.");
+        return;
+      }
+      fetch('/users/balance/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().catch(() => { throw new Error('An error occurred.'); })
+                 .then(err => { throw new Error(err.detail || 'Error withdrawing balance'); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById('currentBalance').innerText = parseFloat(data.new_balance).toFixed(2);
+        document.getElementById("withdrawAmount").value = "";
+      })
+      .catch(error => {
+        console.error("Withdrawal error:", error);
+        alert("Error: " + error.message);
+      });
+    }
+
+    function showBalanceHistory() {
+      window.location.href = "/users/balance/history";
+    }
+
+    // Reusable function to fetch prediction result.
+    function getPredictionResult(taskId) {
+      return fetch('/prediction/prediction_result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: taskId })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            let errorMessage;
+            try {
+              const errObj = JSON.parse(text);
+              errorMessage = errObj.detail || 'Error retrieving prediction result';
+            } catch (e) {
+              errorMessage = text || 'Error retrieving prediction result';
+            }
+            throw new Error(errorMessage);
+          });
+        }
+        return response.json();
+      });
+    }
+
+    // Handle prediction submission.
+    function handleMakePrediction() {
+      const fileInput     = document.getElementById("predictionImage");
+      const file          = fileInput.files[0];
+      const selectedModel = document.querySelector('input[name="modelName"]:checked').value;
+
+      if (!file) { alert("Please choose an image."); return; }
+
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("model_name", selectedModel);
+
+      fetch('/prediction/predict', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => { throw new Error(text || 'Error making prediction'); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        openAutoModal(data.task_id);
+        fileInput.value = "";
+      })
+      .catch(error => alert("Error: " + error.message));
+    }
+
+
+    function showPredictionHistory() {
+      window.location.href = "/prediction/history";
+    }
+
+    // Auto Modal: Show prediction status and enable fetching result.
+    function openAutoModal(taskId) {
+      const modal = document.getElementById("autoModal");
+      const modalMessage = document.getElementById("autoModalMessage");
+      const resultContainer = document.getElementById("autoResultContainer");
+      const resultButton = document.getElementById("autoResultButton");
+
+      modalMessage.innerHTML = "Prediction task is in processing. Task ID: <strong>" + taskId + "</strong>.";
+      resultContainer.innerHTML = ""; // Clear previous results.
+      resultButton.style.display = "inline-block"; // Ensure button is visible.
+
+      resultButton.onclick = function(e) {
+        e.preventDefault();
+        getPredictionResult(taskId)
+          .then(data => {
+            let formattedResult = "";
+            for (const key in data) {
+              formattedResult += key + ": " + data[key] + "\n";
+            }
+            resultContainer.innerText = formattedResult;
+            resultButton.style.display = "none"; // Hide button after fetch.
+          })
+          .catch(error => {
+            alert("Error: " + error.message);
+          });
+      };
+
+      modal.style.display = "block";
+    }
+
+    // Manual Modal: Allow user to enter task_id manually.
+    function openManualModal() {
+      const modal = document.getElementById("manualModal");
+      document.getElementById("manualTaskId").value = "";
+      document.getElementById("manualResultContainer").innerHTML = "";
+      document.getElementById("manualResultButton").style.display = "inline-block"; // Ensure button is visible.
+      modal.style.display = "block";
+    }
+
+    // Set up manual modal button with UUID validation.
+    document.getElementById("manualResultButton").onclick = function(e) {
+      e.preventDefault();
+      const taskId = document.getElementById("manualTaskId").value.trim();
+      const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      if (!uuidRegex.test(taskId)) {
+        alert("Please enter a valid UUID for Task ID.");
+        return;
+      }
+      getPredictionResult(taskId)
+        .then(data => {
+          let formattedResult = "";
+          for (const key in data) {
+            formattedResult += key + ": " + data[key] + "\n";
+          }
+          document.getElementById("manualResultContainer").innerText = formattedResult;
+          document.getElementById("manualResultButton").style.display = "none"; // Hide button after fetch.
+        })
+        .catch(error => {
+          alert("Error: " + error.message);
+        });
+    };
+
+    // Close modals when clicking the close (×) button.
+    document.getElementById("autoModal").querySelector(".close").onclick = function() {
+      document.getElementById("autoModal").style.display = "none";
+    };
+    document.getElementById("manualModal").querySelector(".close").onclick = function() {
+      document.getElementById("manualModal").style.display = "none";
+    };
+
+    // Close modals if clicking outside the modal content.
+    window.onclick = function(event) {
+      const autoModal = document.getElementById("autoModal");
+      const manualModal = document.getElementById("manualModal");
+      if (event.target == autoModal) { autoModal.style.display = "none"; }
+      if (event.target == manualModal) { manualModal.style.display = "none"; }
+    };
+
+    // Auto-update current balance on page load.
+    document.addEventListener('DOMContentLoaded', updateCurrentBalance);
+  </script>
+{% endblock %}

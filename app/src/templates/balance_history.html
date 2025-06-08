@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Balance History - My Site{% endblock %}
+
+{% block content %}
+  <h2>Balance History</h2>
+
+  {% if history and history|length > 0 %}
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Amount Before Change</th>
+          <th>Amount Change</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in history %}
+          <tr>
+            <td>{{ record.id }}</td>
+            <td>{{ record.amount_before_change }}</td>
+            <td>{{ record.amount_change }}</td>
+            <td>{{ record.timestamp }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="no-history-message">No balance transactions were made.</p>
+  {% endif %}
+
+  <a href="/home" class="btn">Return Home</a>
+
+  <style>
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    .history-table th, .history-table td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    .history-table th {
+      background-color: #f2f2f2;
+    }
+    .no-history-message {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+  </style>
+{% endblock %}

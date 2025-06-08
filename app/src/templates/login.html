@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Login - My Site{% endblock %}
+
+{% block content %}
+  <h2>Login</h2>
+  <form id="loginForm" action="/users/login" method="post">
+      <div>
+          <label for="username">Email:</label>
+          <input type="text" id="username" name="username" placeholder="Enter your email" required>
+      </div>
+      <div>
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit">Login</button>
+  </form>
+  <p>
+      Don't have an account? <a href="/signup">Sign up here</a>.
+  </p>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();  // Prevent the default form submission
+
+      const formData = new FormData(this);
+
+      fetch('/users/login', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          alert('Invalid credentials');
+        } else {
+          window.location.href = '/home'; // Redirect on successful login
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred, please try again.');
+      });
+    });
+  </script>
+{% endblock %}

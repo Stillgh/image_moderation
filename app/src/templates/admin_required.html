@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+  <div class="access-container">
+    <h2>Access Denied</h2>
+    <p>To access that page, you should be an admin.</p>
+    <div class="button-group">
+      <a href="/home" class="btn">Home</a>
+      <a href="/login" class="btn">Login</a>
+    </div>
+  </div>
+{% endblock %}
+
+<style>
+  .access-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .access-container h2 {
+    margin-bottom: 1rem;
+    color: #d9534f; /* a red shade to indicate denial */
+  }
+  .access-container p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #4a90e2;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .btn:hover {
+    background-color: #357ab8;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+</style>
